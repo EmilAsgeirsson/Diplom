@@ -10,7 +10,14 @@ g = 9.82; % Gravitational acceleration [m/s^2]
 
 %% Root Locus Plot
 s = tf('s');
-H = (s+1)/(s^2+2*s+2);
+Kp = 305.8805;
+Ki = 0.061121;
+Kd = 0.1528;
+K = Kp + Ki/s + Kd*s;
+G = 2/(0.5*s^2 + 0.2*s -4.91);
+H = K*G
+figure('Name', 'HomemadeRootLocus')
+rlocus(H)
 [R,K] = rlocus(H);
 polesH = pole(H);
 zerosH = zero(H);
