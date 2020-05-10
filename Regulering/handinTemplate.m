@@ -2,22 +2,37 @@ clc
 clear
 close all
 
-%% Model Parameters
+% Model Parameters
 m = 1; % Mass of link [kg]
 l = 0.5; % Distance to CoM of link [m]
 b = 0.1; % Joint friction coefficient [Nm/(rad/s)]
 g = 9.82; % Gravitational acceleration [m/s^2]
 
-%% Root Locus Plot
+C = [1 0 ]
+A1 = [0 1;
+     (cos(pi/3)*g)/l (-b/(m*l^2))]
+A2 = [0 1;
+     g/2*l (-b/(m*l^2))]
+B = [0; 1/(m*l^2)]
+
+nonLinSys = ss(A1,B,C,0)
+ninSys = ss(A2,B,C,0)
+
+% Root Locus Plot
 s = tf('s');
-Kp = 305.8805;
-Ki = 0.061121;
-Kd = 0.1528;
-K = Kp + Ki/s + Kd*s;
+Kp = 1;
+Ti = 0.1;
+Td = 0.025;
+K = Kp * (1 + 1/(Ti*s) + Td*s);
+%% Linearized
 G = 2/(0.5*s^2 + 0.2*s -4.91);
+%% NonLinearized
+G = 1/(0.25*s^2 + 0.1*s -2.4550);
+%%
 H = K*G
 figure('Name', 'HomemadeRootLocus')
 rlocus(H)
+grid on
 [R,K] = rlocus(H);
 polesH = pole(H);
 zerosH = zero(H);
@@ -55,8 +70,10 @@ box on
 
 %% System Response
 t = linspace(0,10);
-u = sin(t);
-y = 0.5*sin(t+1);
+ u = sin(t);
+%u = (sqrt(3)*l*m*g)/3
+y = u;
+%y = 0.5*sin(t+1);
 
 font_size=10;
 width = 10;         

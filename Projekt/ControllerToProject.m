@@ -1,6 +1,8 @@
 clc;
 clear;
 close all;
+sin(1)
+%%
 % Values
 s = tf('s');
 mc=0.9+0.1; 
