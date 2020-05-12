@@ -30,9 +30,6 @@ G = 2/(0.5*s^2 + 0.2*s -4.91);
 G = 1/(0.25*s^2 + 0.1*s -2.4550);
 %%
 H = K*G
-figure('Name', 'HomemadeRootLocus')
-rlocus(H)
-grid on
 [R,K] = rlocus(H);
 polesH = pole(H);
 zerosH = zero(H);
