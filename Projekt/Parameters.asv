@@ -23,5 +23,5 @@ g = 9.82;
 % U3(FDist)
 % assume that bp*x is neglected (no friction)
 (1/(l^2*mp))*(u(3)-mp*l*u(1)*cos(u(2))+mp*g*l*sin(u(2)));
-% (1/(l^2*mp))* (Fdist - mp*l*ddx*cos(th) + mp*g*l*sin(th))
+% (1/l^2*mp)* ()
 
