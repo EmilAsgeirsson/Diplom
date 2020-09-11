@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <stack>
+#include <vector>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ stack<char> myStack;
 bool isEven;
 bool startPar;
 
-bool balPar (string text);
+bool balPar(string text);
 void fillStack(string text, int l);
 
 void fillStack(string text, int l)
@@ -23,73 +24,73 @@ void fillStack(string text, int l)
 	char c = text.at(l - 1);
 	myStack.push(c);
 	fillStack(text, l - 1);
-	
+
 }
 
-bool linear(string s, char c, int l)
-{
-	if (l == 0)
-		return false;
-	if (s.at(l - 1) == c)
-		return true;
-	return linear(s, c, l - 1);
-}
-
-bool balPar (string text)
+bool balPar(string text)
 {
 	if (myStack.empty())
+	{
 		fillStack(text, text.size());
-	
-	char c = myStack.top();
-	myStack.pop();
-	if (c == '(')
-	{
-		return balPar(text);
-	}
-	if (c == ')')
-	{
-		return balPar(text);
-	}
-	else if(myStack.empty())
-		return true;
-
-	/*stack<char> myStack;
-	for (char i : text)
-	{
-		myStack.push(i);
+		text = "";
 	}
 
-	bool startPar = false;
-	bool isEven = true;
-
-	for (char i : myStack)
+	if (!myStack.empty())
 	{
-		char i = myStack.top();
+		char c = myStack.top();
+		myStack.pop();
+		if (c == '(' && !myStack.empty())
+		{
+			text.push_back('(');
+			return balPar(text);
+		}
+		else if (c == ')' && !myStack.empty())
+		{
+			text.push_back(')');
+			return balPar(text);
+		}
+		else if (myStack.empty())
+		{
+			if (c == '(')
+			{
+				text.push_back('(');
+			}
+			else if (c == ')')
+			{
+				text.push_back(')');
+			}
 
-		if (el == '(' && isEven == true)
-		{
-			startPar = true;
-			isEven = false;
+			vector<int> start, end;
+			int startPar = text.find('(');
+			int endPar = text.find(')');
+			while (startPar != string::npos)
+			{
+				start.push_back(startPar);
+				startPar = text.find('(', startPar + 1);
+			}
+			while (endPar != string::npos)
+			{
+				end.push_back(endPar);
+				endPar = text.find(')', endPar + 1);
+			}
+
+			if (start.size() != 0 && start.size() == end.size())
+			{
+				return true;
+			}
+			return false;
 		}
-		else if (el == '(' && startPar)
+		else
 		{
-			isEven = true;
+			return balPar(text);
 		}
-		else if (el == ')' && isEven == false)
-		{
-			isEven = true;
-		}
-		else if (el == ')' && isEven == true)
-		{
-			isEven = false;
-		}
-	}*/
+	}
 }
 
 
 
-int main ()
+int main()
 {
-	cout << balPar("hejhej") << endl;
+	cout << balPar("()()((()))") << endl;
 
 }
