@@ -88,9 +88,19 @@ bool balPar(string text)
 }
 
 
+//void fillStack(string text)
+//{
+//	if (text.empty())
+//		return;
+//	char c = text.at(text.size()-1);
+//	myStack.push(c);
+//	fillStack(text, l - 1);
+//
+//}
+
 
 int main()
 {
-	cout << balPar("()()((()))") << endl;
+	cout << balPar("()()(()()()()()()sdRADFSADS)") << endl;
 
 }
