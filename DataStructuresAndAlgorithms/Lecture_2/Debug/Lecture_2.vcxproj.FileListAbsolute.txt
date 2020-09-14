@@ -1,0 +1,2 @@
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture_2\Debug\Lecture_2.exe
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture_2\Debug\Lecture_2.pdb
