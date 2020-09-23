@@ -1,4 +1,4 @@
 ﻿  BallsNBins.cpp
-C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(11,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(26,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(51,33): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(68,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   BallsNBins.vcxproj -> C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\x64\Debug\BallsNBins.exe
