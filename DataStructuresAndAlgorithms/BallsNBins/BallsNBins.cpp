@@ -78,33 +78,11 @@ int main()
     // With 10007 balls. The maximum bin size is usually seven. I've seen 8 once.
     // With 32749 balls. The maximum bin size is usually seven. I've seen 8 once.
 
+    // We must use log2 in computer science and not log10.
     std::cout << "Ordinay:\t\t" << log(32749) / log(log(32749)) << std::endl;
     std::cout << "Two Choices:\t" << log(log(32749)) << std::endl;
     // No this is wrong.
-    
+    std::cout << "Ordinay:\t\t" << log(10007) / log(log(10007)) << std::endl;
+    std::cout << "Two Choices:\t" << log(log(10007)) << std::endl;
 
-    
-    
-    /*int yada = 0;
-    std::cout << bins[count].size() << std::endl;
-    for (int i = 0; i < bins[count].size();i++) 
-    {
-        std::cout << bins[count][i] << std::endl;
-    }*/
-
-    
-
-   /* for (std::vector<int> &bin : bins)
-    {
-        if (bin.size() > max)
-        {
-            max = bin.;
-        }
-    }
-
-    std::cout << bins[0].size() << std::endl;
-    for (int i = 0; i < bins[0].size();i++) {
-        std::cout << bins[0][i] << std::endl;
-        count++;
-    }*/
 }
