@@ -15,6 +15,7 @@ bool isEven;
 bool startPar;
 
 bool balPar(string text);
+bool balPar2(string text);
 void fillStack(string text, int l);
 
 void fillStack(string text, int l)
@@ -88,19 +89,34 @@ bool balPar(string text)
 }
 
 
-//void fillStack(string text)
-//{
-//	if (text.empty())
-//		return;
-//	char c = text.at(text.size()-1);
-//	myStack.push(c);
-//	fillStack(text, l - 1);
-//
-//}
+bool balPar2(string text)
+{
+	stack<char> myStack2;
+
+	for (int i = 0; i < text.length(); i++)
+	{
+		char c = text.at(i);
+
+		if (c == '(')
+		{
+			myStack2.push(c);
+		}
+		else if (c == ')')
+		{
+			if (myStack2.empty())
+				return false;
+			myStack2.pop();
+		}
+	}
+	if (myStack2.empty())
+		return true;
+	return false;
+}
 
 
 int main()
 {
-	cout << balPar("()()(()()()()()()sdRADFSADS)") << endl;
+	//cout << balPar("()()(()()()()()()sdRADFSADS)") << endl;
+	cout << balPar2("()()()(()))") << endl;
 
 }
