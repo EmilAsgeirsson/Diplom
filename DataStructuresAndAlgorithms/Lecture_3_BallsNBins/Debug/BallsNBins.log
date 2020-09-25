@@ -1,0 +1,6 @@
+﻿  BallsNBins.cpp
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(11,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(13,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(22,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\BallsNBins.cpp(24,28): warning C4018: '>': signed/unsigned mismatch
+  BallsNBins.vcxproj -> C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\Debug\BallsNBins.exe

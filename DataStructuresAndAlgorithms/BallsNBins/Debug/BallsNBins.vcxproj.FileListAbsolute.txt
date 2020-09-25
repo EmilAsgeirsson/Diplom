@@ -1,2 +1,0 @@
-C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\Debug\BallsNBins.exe
-C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\BallsNBins\Debug\BallsNBins.pdb
