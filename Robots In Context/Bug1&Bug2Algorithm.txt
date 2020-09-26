@@ -1,0 +1,398 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <string>
+#include <chrono>
+#include <vector>
+
+using namespace cv;
+
+/*
+ * Implement a program which can
+ *  – Read in an image as workspace
+ *  – Can plan a path between two points in the image using the Bug1 and Bug2 algorithms.
+ *  – Can output the image with the two results of the images in different colors.
+ *Test the program on different maps with different complexity
+ */
+
+Mat cannyImg, dst, image, iterationImage;
+std::string windowName = "BugAlgorithm";
+
+int xStart = 100;
+int yStart = 200;
+Point startPoint = Point(xStart, yStart);
+
+int xEnd = 600;
+int yEnd = 400;
+Point endPoint = Point(xEnd, yEnd);
+
+int white = 255;
+int black = 0;
+Vec3b startFinishLine = Vec3b(200, 120, 0);
+
+int stepSizeX = 0;
+bool down = false;
+int obstaclenumber = 0;
+std::vector<Point> listOfPoints;
+
+void advanceBug1(Point point);
+void advanceBug2(Point point);
+void obstacle(Point point, int bugNumber);
+void goToNearestPoint(Point point);
+
+void advanceBug1(Point point)
+{
+    imshow(windowName ,image);
+    waitKey(10);
+    circle(image, Point(point.x, point.y), 2, CV_RGB(255,0,0), 2);
+
+    if(point.x == endPoint.x)
+    {
+        if(point.y < endPoint.y)
+        {
+            advanceBug1(Point(point.x, point.y + 1)); // Go Down
+            return;
+        }
+        else if (point.y > endPoint.y)
+        {
+            advanceBug1(Point(point.x, point.y - 1)); // Go Up
+            return;
+        }
+
+        if(point.y == endPoint.y)
+        {
+            printf("GOOOOOAL!");
+            return;
+        }
+    }
+
+    if ((int)dst.at<uchar>(Point(point.x + 1,point.y)) == black)
+    {
+        advanceBug1(Point(point.x + 1, point.y)); // Go Right
+        return;
+    }
+    else
+    {
+        obstacle(Point(point.x, point.y), 1); // Obstacle
+        return;
+    }
+
+}
+
+void advanceBug2(Point point)
+{
+    imshow(windowName ,image);
+    waitKey(10);
+    listOfPoints.clear();
+    circle(image, Point(point.x, point.y), 2, CV_RGB(255,0,0), 2);
+
+    if(point.x == endPoint.x)
+    {
+        if(point.y < endPoint.y)
+        {
+            advanceBug2(Point(point.x, point.y + 1)); // Go Down
+            return;
+        }
+        else if (point.y > endPoint.y)
+        {
+            advanceBug2(Point(point.x, point.y - 1)); // Go Up
+            return;
+        }
+
+        if(point.y == endPoint.y)
+        {
+            printf("GOOOOOAL!");
+            return;
+        }
+    }
+
+    // We calculate the slope before the advance step.
+    // Here we iterate the number of steps in the X direction before
+    // taking a step in the y direction.
+    // If an obstacle is encountered. We start circeling the obstacle.
+    for (int i = 0; i < stepSizeX; i++)
+    {
+        if(point.x + i == endPoint.x)
+        {
+            advanceBug2(Point(point.x + i, point.y)); // Go Up
+            return;
+        }
+
+        if((int)dst.at<uchar>(Point(point.x + i,point.y)) != black)
+        {
+            obstaclenumber++;
+            obstacle(Point(point.x + i - 1, point.y + 1), 2); // Obstacle
+            return;
+        }
+
+        circle(image, Point(point.x + i, point.y), 2, CV_RGB(255,0,0), 2);
+        imshow(windowName ,image);
+        waitKey(10);
+    }
+
+    if (down)
+    {
+        advanceBug2(Point(point.x + stepSizeX, point.y + 1)); // Go down
+        return;
+    }
+    else
+    {
+        advanceBug2(Point(point.x + stepSizeX, point.y - 1)); // Go up
+        return;
+    }
+}
+
+void obstacle(Point point, int bugNumber)
+{
+    imshow(windowName ,image);
+    waitKey(5);
+    circle(image, Point(point.x, point.y), 2, CV_RGB(255, 255, 0), 2);
+    // If we have iterated around the entire object. We must go back to the point closest to the endPoint
+    listOfPoints.push_back(point);
+    if(point == listOfPoints[0] && listOfPoints.size() > 2 && bugNumber == 1)
+    {
+        goToNearestPoint(point);
+        return;
+    }
+
+    if(iterationImage.at<Vec3b>(point) == startFinishLine && listOfPoints.size() > 100 && bugNumber == 2)
+    {
+        advanceBug2(point);
+        return;
+    }
+
+    std::cout << "obstacle: " << listOfPoints.back() << std::endl;
+
+    // Obstacle in front - go up
+    if ((int)dst.at<uchar>(Point(point.x + 1,point.y)) != black)
+    {
+        // Above pixel is free
+        if((int)dst.at<uchar>(Point(point.x, point.y - 1)) == black)
+        {
+            obstacle(Point(point.x, point.y - 1), bugNumber); // Go Up
+            return;
+        }
+        else // Obstacle above - go left
+        {
+            obstacle(Point(point.x - 1, point.y), bugNumber); // Go left
+            return;
+        }
+    }
+    // Obstacle below - go right
+    else if ((int)dst.at<uchar>(Point(point.x, point.y + 1)) != black)
+    {
+        // Right pixel is free.
+        if ((int)dst.at<uchar>(Point(point.x + 1, point.y)) == black)
+        {
+            obstacle(Point(point.x + 1, point.y), bugNumber); // Go Right
+            return;
+        }
+        else // Obstacle to the right - go up
+        {
+            obstacle(Point(point.x, point.y - 1), bugNumber); // Go up
+            return;
+        }
+    }
+    // Obstacle to the left
+    else if((int)dst.at<uchar>(Point(point.x - 1, point.y)) != black)
+    {
+        // below pixel is free
+        if((int)dst.at<uchar>(Point(point.x, point.y + 1)) == black)
+        {
+            obstacle(Point(point.x, point.y + 1), bugNumber); // Go Down
+            return;
+        }
+        else // Obstacle below - go right
+        {
+            obstacle(Point(point.x + 1, point.y), bugNumber); // Go Down
+            return;
+        }
+    }
+    // Obstacle above
+    else if((int)dst.at<uchar>(Point(point.x, point.y - 1)) != black)
+    {
+        // Left pixel is free
+        if((int)dst.at<uchar>(Point(point.x - 1, point.y)) == black)
+        {
+            obstacle(Point(point.x - 1, point.y), bugNumber); // Go Left
+            return;
+        }
+        else // Obstacle to the left - go down
+        {
+            obstacle(Point(point.x, point.y + 1), bugNumber); // Go Left
+            return;
+        }
+    }
+    // Top left cornor
+    else if((int)dst.at<uchar>(Point(point.x + 1, point.y + 1)) != black && Point(point.x + 1, point.y) != listOfPoints[listOfPoints.size() - 2])
+    {
+        obstacle(Point(point.x + 1, point.y), bugNumber); // Go one step right
+        return;
+    }
+    // Top right cornor
+    else if((int)dst.at<uchar>(Point(point.x - 1, point.y + 1)) != black && Point(point.x, point.y + 1) != listOfPoints[listOfPoints.size() - 2]) // && (int)dst.at<uchar>(Point(point.x + 1,point.y + 1)) == black)
+    {
+        obstacle(Point(point.x, point.y + 1), bugNumber); // Go one step down
+        return;
+    }
+    // Bottom right cornor
+    else if((int)dst.at<uchar>(Point(point.x - 1, point.y - 1)) != black && Point(point.x - 1, point.y) != listOfPoints[listOfPoints.size() - 2])//&& (int)dst.at<uchar>(Point(point.x - 1,point.y + 1)) == black)
+    {
+        obstacle(Point(point.x - 1, point.y), bugNumber); // Go one step left
+        return;
+    }
+    // Bottom left cornor
+    else if((int)dst.at<uchar>(Point(point.x + 1, point.y - 1)) != black && Point(point.x, point.y - 1) != listOfPoints[listOfPoints.size() - 2])//&& (int)dst.at<uchar>(Point(point.x + 1,point.y - 1)) == black)
+    {
+        obstacle(Point(point.x, point.y - 1), bugNumber); // Go one step up
+        return;
+    }
+}
+
+void goToNearestPoint(Point point)
+{
+    int minDistanceX = listOfPoints[0].x;
+    int minDistanceY = listOfPoints[0].y;
+    // Find min distance for y.
+    for (int k = 0; k < listOfPoints.size(); ++k)
+    {
+        if(abs(endPoint.y - listOfPoints[k].y) < abs(endPoint.y - minDistanceY))
+        {
+            minDistanceY = listOfPoints[k].y;
+        }
+    }
+
+    for (int j = 0; j < listOfPoints.size(); ++j)
+    {
+        if(listOfPoints[j].y == minDistanceY)
+        {
+            if((endPoint.x - listOfPoints[j].x) < endPoint.x - minDistanceX)
+            {
+                minDistanceX = listOfPoints[j].x;
+            }
+        }
+    }
+
+    Point leaveObjectPoint = Point(minDistanceX, minDistanceY);
+    int iterator = 0;
+    while(true)
+    {
+        if (listOfPoints[iterator] == leaveObjectPoint)
+            break;
+
+        iterator++;
+        if(iterator == listOfPoints.size())
+        {
+            iterator = 0;
+            minDistanceY -= 1;
+        }
+    }
+
+    for (int l = 0; l < listOfPoints.size(); ++l)
+    {
+        if (listOfPoints[l] == leaveObjectPoint)
+            break;
+
+    }
+
+    for (int i = listOfPoints.size() - 1; ; i--)
+    {
+        circle(image, Point(listOfPoints[i].x, listOfPoints[i].y), 2, CV_RGB(255,0,0), 2);
+        imshow(windowName ,image);
+        waitKey(10);
+
+        if(listOfPoints[i] == leaveObjectPoint)
+        {
+            listOfPoints.clear();
+            advanceBug1(listOfPoints[i]);
+
+            return;
+        }
+    }
+}
+
+int main()
+{
+    std::string imageName = "../Workspace.jpg";
+
+    image=imread(imageName.c_str(), IMREAD_COLOR); // Read the file
+    if( image.empty() ) // Check for invalid input
+    {
+        std::cout << "Could not open or find the image" << std::endl;
+        return -1;
+    }
+
+    Canny(image, cannyImg, 50, 200, 3);
+    dst = Scalar::all(0);
+    cannyImg.copyTo(dst);
+    image.copyTo(iterationImage);
+
+    circle(image, startPoint, 2, CV_RGB(255,0,0), 3);
+
+    circle(image, endPoint, 2, CV_RGB(0,255,0), 3);
+
+    line(iterationImage, Point(startPoint.x, startPoint.y), Point(endPoint.x, endPoint.y), CV_RGB(0, 120, 200), 1);
+    line(image, Point(startPoint.x, startPoint.y), Point(endPoint.x, endPoint.y), CV_RGB(0, 120, 200), 1);
+
+    namedWindow(windowName, WINDOW_AUTOSIZE); // Create a window.
+
+    // I calculate the number of steps in the x direction to take before advancing in the y direction.
+    double stepSize = 1 / (((double)endPoint.y - startPoint.y) / (endPoint.x - startPoint.x));
+    // If x is negative. The slope is going up and a boolean value is set to determine the direction of y.
+    if (stepSize > 0.0)
+        down = true;
+    // stepSizeX is set to be a positive value for the forloop in advanceBug2.
+    stepSize = abs(stepSizeX);
+    // Check whether the number is closer to the upper reel integer or lower.
+    double whole = floor(stepSizeX);
+    double decimal = stepSizeX - whole;
+    if(decimal <= 0.5)
+    {
+        stepSizeX = floor(stepSize);
+    }
+    else
+    {
+        stepSizeX = floor(stepSize) + 1;
+    }
+    //advanceBug1(startPoint);
+    //advanceBug2(startPoint);
+
+
+    imshow(windowName ,image);
+    waitKey(0); // Wait for a keystroke in the window
+    destroyAllWindows();
+
+    return 0;
+}
+
+/***************************************************************************************************************************
+/                                                                                                                           /
+/                                                       Code to debug                                                       /
+/                                                                                                                           /
+/                                                                                                                           /
+/***************************************************************************************************************************/
+
+
+//if(obstaclenumber == 2)
+//{
+//std::cout << iterationImage.at<Vec3b>(Point(point.x - 1, point.y -1)) << ", " << iterationImage.at<Vec3b>(Point(point.x, point.y - 1)) << ", " << iterationImage.at<Vec3b>(Point(point.x + 1, point.y - 1)) << std::endl
+//          << iterationImage.at<Vec3b>(Point(point.x - 1, point.y))    << ", " << iterationImage.at<Vec3b>(Point(point.x, point.y)) << ", " << iterationImage.at<Vec3b>(Point(point.x + 1, point.y)) << std::endl
+//          << iterationImage.at<Vec3b>(Point(point.x - 1, point.y + 1)) << ", " << iterationImage.at<Vec3b>(Point(point.x, point.y + 1)) << ", " << iterationImage.at<Vec3b>(Point(point.x + 1, point.y + 1)) << std::endl;
+//std::cout << (int)dst.at<uchar>(Point(point.x -1, point.y-1)) << ", " << (int)dst.at<uchar>(Point(point.x, point.y-1)) << ", " << (int)dst.at<uchar>(Point(point.x + 1, point.y-1)) << std::endl
+//          << (int)dst.at<uchar>(Point(point.x -1, point.y)) << ", " << (int)dst.at<uchar>(Point(point.x, point.y)) << ", " << (int)dst.at<uchar>(Point(point.x + 1, point.y)) << std::endl
+//          << (int)dst.at<uchar>(Point(point.x -1, point.y+1)) << ", " << (int)dst.at<uchar>(Point(point.x, point.y+1)) << ", " << (int)dst.at<uchar>(Point(point.x + 1, point.y+1)) << std::endl;
+//
+//waitKey(0);
+//}
+
+//std::cout << image.at<Vec3b>(Point(320, 304)) << ", " << image.at<Vec3b>(Point(321, 304)) << ", " << image.at<Vec3b>(Point(322, 304)) << std::endl
+//          << image.at<Vec3b>(Point(320, 305)) << ", " << image.at<Vec3b>(Point(321, 305)) << ", " << image.at<Vec3b>(Point(322, 305)) << std::endl
+//          << image.at<Vec3b>(Point(320, 306)) << ", " << image.at<Vec3b>(Point(321, 306)) << ", " << image.at<Vec3b>(Point(322, 306)) << std::endl;
+//
+//std::cout << (int)dst.at<uchar>(Point(320, 304)) << ", " << (int)dst.at<uchar>(Point(321, 304)) << ", " << (int)dst.at<uchar>(Point(322, 304)) << "," << (int)dst.at<uchar>(Point(323, 304)) << std::endl
+//          << (int)dst.at<uchar>(Point(320, 305)) << ", " << (int)dst.at<uchar>(Point(321, 305)) << ", " << (int)dst.at<uchar>(Point(322, 305)) << "," << (int)dst.at<uchar>(Point(323, 305)) << std::endl
+//          << (int)dst.at<uchar>(Point(320, 306)) << ", " << (int)dst.at<uchar>(Point(321, 306)) << ", " << (int)dst.at<uchar>(Point(322, 306)) << "," << (int)dst.at<uchar>(Point(323, 306)) << std::endl;
+
+// CV_RGB is a scalar and has 4 values. Vec3b only has three. R and B are switched around.
+//Point robot = startPoint;
+//Vec3b white = Vec3b(255, 255, 255);
+//Vec3b black = Vec3b(0, 0, 0);
