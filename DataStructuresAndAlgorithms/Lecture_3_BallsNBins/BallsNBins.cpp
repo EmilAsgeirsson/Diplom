@@ -73,13 +73,13 @@ int main()
     std::vector<std::vector<int>> binsTwoChoices = twoChoices(bins);
     
     print("Randomly filled", binsRandom);
-    print("Two Choices", binsTwoChoices);
+    //print("Two Choices", binsTwoChoices);
 
     // With 10007 balls. The maximum bin size is usually seven. I've seen 8 once.
     // With 32749 balls. The maximum bin size is usually seven. I've seen 8 once.
 
     // We must use log2 in computer science and not log10.
-    std::cout << "Ordinay:\t\t" << log2(32749) / log2(log2(32749)) << std::endl;
+    std::cout << "Ordinay:\t\t" << log2(32749 / log2(log2(32749)))  << std::endl;
     std::cout << "Two Choices:\t" << log2(log2(32749)) << std::endl;
     // No this is wrong.
     std::cout << "Ordinay:\t\t" << log2(10007) / log2(log2(10007)) << std::endl;
