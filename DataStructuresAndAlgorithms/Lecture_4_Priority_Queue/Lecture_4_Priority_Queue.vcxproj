@@ -139,7 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BinaryHeap.cpp" />
     <ClCompile Include="Lecture_4_Priority_Queue.cpp" />
   </ItemGroup>
   <ItemGroup>
