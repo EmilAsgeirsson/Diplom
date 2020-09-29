@@ -22,7 +22,7 @@ int yStart = 200;
 Point startPoint = Point(xStart, yStart);
 
 int xEnd = 600;
-int yEnd = 400;
+int yEnd = 250;
 Point endPoint = Point(xEnd, yEnd);
 
 int white = 255;
@@ -338,10 +338,11 @@ int main()
     // I calculate the number of steps in the x direction to take before advancing in the y direction.
     double stepSize = 1 / (((double)endPoint.y - startPoint.y) / (endPoint.x - startPoint.x));
     // If x is negative. The slope is going up and a boolean value is set to determine the direction of y.
+    std::cout << stepSize << std::endl;
     if (stepSize > 0.0)
         down = true;
     // stepSizeX is set to be a positive value for the forloop in advanceBug2.
-    stepSize = abs(stepSizeX);
+    stepSize = abs(stepSize);
     // Check whether the number is closer to the upper reel integer or lower.
     double whole = floor(stepSizeX);
     double decimal = stepSizeX - whole;
@@ -353,8 +354,9 @@ int main()
     {
         stepSizeX = floor(stepSize) + 1;
     }
+    std::cout << stepSizeX << std::endl;
     //advanceBug1(startPoint);
-    //advanceBug2(startPoint);
+    advanceBug2(startPoint);
 
 
     imshow(windowName ,image);
