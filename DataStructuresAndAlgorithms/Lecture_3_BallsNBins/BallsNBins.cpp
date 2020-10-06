@@ -15,7 +15,11 @@ std::vector<std::vector<int>> fillRandomly(std::vector<std::vector<int>> bins)
     return bins;
 }
 
-
+/// <summary>
+/// hermafrodit
+/// </summary>
+/// <param name="bins">You should go lick ass</param>
+/// <returns></returns>
 std::vector<std::vector<int>> twoChoices(std::vector<std::vector<int>> bins)
 {
     // Pick two bins randomly and fill up the lowest of the two.
