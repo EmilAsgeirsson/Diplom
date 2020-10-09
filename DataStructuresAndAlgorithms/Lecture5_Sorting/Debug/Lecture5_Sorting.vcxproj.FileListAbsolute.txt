@@ -1,0 +1,2 @@
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture5_Sorting\Debug\Lecture5_Sorting.exe
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture5_Sorting\Debug\Lecture5_Sorting.pdb
