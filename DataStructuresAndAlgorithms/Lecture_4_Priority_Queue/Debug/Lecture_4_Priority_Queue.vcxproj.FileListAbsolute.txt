@@ -1,0 +1,2 @@
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture_4_Priority_Queue\Debug\Lecture_4_Priority_Queue.exe
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\Lecture_4_Priority_Queue\Debug\Lecture_4_Priority_Queue.pdb

@@ -142,7 +142,8 @@
     <ClCompile Include="Lecture_4_Priority_Queue.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header.h" />
+    <ClInclude Include="BinaryHeap.h" />
+    <ClInclude Include="DsExceptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,2 @@
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\MandatoryExercise1\Debug\MandatoryExercise1.exe
+C:\Users\emila\Documents\Diplomingeniør lokal\GitHubDesktop\Diplom\DataStructuresAndAlgorithms\MandatoryExercise1\Debug\MandatoryExercise1.pdb
