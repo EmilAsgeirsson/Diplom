@@ -81,8 +81,6 @@ void PriorityQueue::percolateDown(unsigned hole)
         }
     }
     mArray[hole] = tmp;
-    //mArray.erase(mArray.begin()+ child);
-    //mArray.pop_back();
 }
 
 int PriorityQueue::selectionProblem(unsigned k)
