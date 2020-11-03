@@ -14,8 +14,6 @@ int main()
 
     srand( static_cast<unsigned int>(time(nullptr)));
 
-
-
     // create array
     unsigned size = 10000;
     PriorityQueue pq(size + 1);
@@ -23,38 +21,33 @@ int main()
     for (unsigned i = 0; i < keys.size(); i++)
     {
         keys[i] = rand() % 99 + 1;
-        pq.insert(rand() % 99 + 1);
+        //pq.insert(rand() % 99 + 1);
     }
 
-    cout << "printing priority queue" << endl;
-    pq.print();
-
-
-
-    pq.print();
-    //cout << "After deleteMin" << endl;
-
-    //pq.print();
+    //cout << "printing priority queue" << endl;
+   // pq.print();
 
     // The selection problem states that you have an unsorted list and must find the k'th smallest element.
     // The idea here would be deleteMin untill we've found the k'th smallest element.
 
     int N = keys.size();
-    double thcalc = N * log2(N);
-    unsigned k = 450;
+    //double thcalc = N * log2(N);
+    double thcalc = N;
+    unsigned k = size/2;
+    //unsigned k = 150;
     cout << "Theoretical calcuation: " << thcalc << endl;
-    int foundValue = pq.selectionProblem(k);
-    cout << "Selection problem returned: " << foundValue << endl;
+    //int foundValue = pq.selectionProblem(k);
+    //cout << "Selection problem returned: " << foundValue << endl;
 
     //pq.print();
-
-    return 0;
 
     QuickSelect qSelect(keys);
 
     //int k = 3;
     qSelect.quickselect(keys, 0 , keys.size()-1, k);
-    cout << keys[k] << endl;
+    //cout << keys[k] << endl;
+
+    qSelect.printComplexity();
 
     return 0;
 }

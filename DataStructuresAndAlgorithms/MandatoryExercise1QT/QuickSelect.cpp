@@ -1,8 +1,10 @@
 #include "QuickSelect.h"
+#include <iostream>
 
 using namespace std;
 
 QuickSelect::QuickSelect(vector<int> & a)
+    :mComplexity(0)
 {
     mArray = a;
 }
@@ -81,4 +83,9 @@ void QuickSelect::insertionSort(vector<int>& a, int begin, int end)
         }
         j = tmp;
     }
+}
+
+void QuickSelect::printComplexity()
+{
+    cout << "Practical calculation: " << mComplexity << endl;
 }

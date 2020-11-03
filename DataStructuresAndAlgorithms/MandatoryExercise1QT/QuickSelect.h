@@ -10,6 +10,7 @@ public:
     void quickselect(std::vector<int>& a, int left, int right, int k);
     unsigned median3(std::vector<int>& a, int left, int right);
     void insertionSort(std::vector<int>& a, int begin, int end);
+    void printComplexity();
 
 private:
     int mComplexity;
