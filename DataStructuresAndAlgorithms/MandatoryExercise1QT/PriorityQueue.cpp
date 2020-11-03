@@ -5,13 +5,14 @@
 using namespace std;
 
 PriorityQueue::PriorityQueue()
-    : mCurrentSize{0}, mArray(101)
+    : mCurrentSize{0}, mComplexity(0), mArray(101)
 {
 }
 
-PriorityQueue::PriorityQueue(vector<int> array)
+PriorityQueue::PriorityQueue(unsigned size)
+    : mCurrentSize{0}, mComplexity(0), mArray(size)
 {
-    mArray = array;
+
 }
 
 void PriorityQueue::insert(int x)
@@ -25,81 +26,76 @@ void PriorityQueue::insert(int x)
     // As long a the new value is smaller that the one above, we perlocate each element down.
     for (;  x < mArray[hole / 2]; hole /= 2)
     {
+        mComplexity++;
         mArray[hole] = mArray[hole / 2];
     }
 
     // When the element at the next node is no longer larger than x. We insert x into this spot.
     mArray[hole] = mArray[0];
-
-
-
-
-    //if(mArray.size() == 0)
-    //{
-    //    cout << "array empty. Adding " << x << endl;
-    //    mArray.push_back(x);
-    //}
-
-
-
-
-    /*
-    for (unsigned i = 0; i < mArray.size();i++)
-    {
-        // If element is already inserted. Skip it. I dont't want duplicates
-        if(x == mArray[i] || i > 100)
-            break;
-
-
-        if (x < mArray[i])
-        {
-            cout << x << " is smaller than " << mArray[i] << endl;
-            mArray.insert(mArray.begin() + i, x);
-            return;
-        }
-
-        if(i == mArray.size() - 1)
-        {
-            cout << x << " is larger than all elements and is pushed back " << endl;
-            mArray.push_back(x);
-        }
-    }
-    */
+    cout << "insert " << x << " at " << hole << endl;
 }
 
 // Finds, deletes and returns the smallest number in the heap
-void PriorityQueue::deleteMin()
+int PriorityQueue::deleteMin()
 {
     if(mArray.empty())
     {
         cout << "Array empty. Cant delete anything" << endl;
-        return;
+        return -1;
     }
 
-    //int minItem = mArray[1];
+    int minItem = mArray[1];
 
-    // Minimum item will always be 1.
+    // Minimum item will always be at location 1.
     mArray[1] = mArray[static_cast<unsigned>(mCurrentSize--)];
+    percolateDown(1);
+    return minItem;
 
+}
+
+void PriorityQueue::percolateDown(unsigned hole)
+{
     // Perculate down
     unsigned child;
-    unsigned hole = 1;
     int tmp = mArray[hole];
 
     for (; hole * 2 <= static_cast<unsigned>(mCurrentSize); hole = child)
     {
+        mComplexity++;
         child = hole * 2;
-        // Check that child is not at the end of the array, so that the node har children.
+
+        // Check that child is not at the end of the array, so that the node has children and that the right child
+        // is smaller than the left child.
         if (child != static_cast<unsigned>(mCurrentSize) && mArray[child + 1] < mArray[child])
+        {
             ++child;
+        }
+
         if (mArray[child] < tmp)
+        {
             mArray[hole] = mArray[child];
+        }
         else
+        {
             break;
+        }
     }
     mArray[hole] = tmp;
+    //mArray.erase(mArray.begin()+ child);
+    //mArray.pop_back();
 }
 
+int PriorityQueue::selectionProblem(unsigned k)
+{
+    int value = 0;
+    for (unsigned i = 0; i < k; i++)
+    {
+       value = deleteMin();
+    }
+
+    cout << "Practical calculation: " << mComplexity << endl;
+    return value;
+}
 
 void PriorityQueue::print()
 {
@@ -113,16 +109,14 @@ void PriorityQueue::print()
 
     for (unsigned i = 1; i < mArray.size(); ++i)
     {
-        if(i >= static_cast<unsigned>(mCurrentSize))
+        if(i > static_cast<unsigned>(mCurrentSize))
         {
             mArray.erase(mArray.begin() + i);
             i--;
         }
     }
 
-    cout << mArray.size() << endl;
-
-    cout << endl << "As an Array\n[";
+    cout << "As an Array\n[";
 
 
     // Index 0 is reserved for new entries
@@ -148,7 +142,6 @@ void PriorityQueue::print()
     int level = 1;
     int levels = static_cast<int>(log2(mArray.size()));
     int space = static_cast<int>(pow(2, levels - 1) - 1);
-    cout << space << " " << levels << endl;
     bool didIt = false;
     for (unsigned i = 1; i < mArray.size(); ++i)
     {
@@ -175,6 +168,7 @@ void PriorityQueue::print()
     for (int i = 0; i < 100; ++i) {
         cout << "-";
     }
+    cout << endl;
 
 }
 

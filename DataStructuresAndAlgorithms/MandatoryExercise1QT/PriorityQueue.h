@@ -10,21 +10,21 @@ class PriorityQueue
 {
 public:
     PriorityQueue();
+    PriorityQueue(unsigned size);
     PriorityQueue(std::vector<int> array);
 
     void insert(int x);
 
-    void deleteMin();
+    int deleteMin();
+    void percolateDown(unsigned hole);
+    int selectionProblem(unsigned k);
 
     void print();
 
 private:   
     int mCurrentSize;
+    int mComplexity;
     std::vector<int> mArray;
-    std::vector<int>::iterator mIt;
-
-
-
 };
 
 
