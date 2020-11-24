@@ -1,28 +1,28 @@
 #include "Node.h"
-
-Node::Node()
-    :mPoint{}, mChildren(vector<Node*> {})
-{
-
-}
+#include "iostream"
 
 Node::Node(pair<int, int> point)
-    :mPoint{point}, mChildren(vector<Node*> {})
+    :mPoint{point}, mDist{0}, mParent(nullptr), mChildren(vector<Node*> {})
 {
 
 }
 
-Node::Node(pair<int, int> point, vector<Node *> children)
-    :mPoint{point}, mChildren(children)
+Node::Node(pair<int, int> point, Node *parent)
+    : mPoint(point), mParent(parent)
 {
-
+    if(parent==nullptr)
+    {
+        mDist=0;
+    }
+    else
+    {
+        mDist=parent->getDist()+1;
+    }    
 }
 
-Node *Node::newNode(pair<int, int> key)
+void Node::addChild(Node *child)
 {
-    Node *temp = new Node();
-    temp->mPoint = key;
-    return temp;
+    mChildren.push_back(child);
 }
 
 pair<int, int> Node::getPoint()
@@ -30,9 +30,14 @@ pair<int, int> Node::getPoint()
     return mPoint;
 }
 
-vector<Node *> Node::getChildren()
+Node *Node::getParent()
 {
-    return mChildren;
+    return mParent;
+}
+
+int Node::getDist()
+{
+    return mDist;
 }
 
 void Node::setPoint(pair<int, int> point)
@@ -40,7 +45,4 @@ void Node::setPoint(pair<int, int> point)
     mPoint = point;
 }
 
-void Node::addChild(Node *child)
-{
-    mChildren.push_back(child);
-}
+

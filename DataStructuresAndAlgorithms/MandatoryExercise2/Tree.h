@@ -1,6 +1,5 @@
 #ifndef TREE_H
 #define TREE_H
-#include <vector>
 #include "Node.h"
 
 using namespace std;
@@ -9,15 +8,15 @@ class Tree
 {
 public:
     Tree();
+    Tree(Node *start, pair<int,int> knightEndPosition);
 
-    void insert(const pair<int,int> &x, Node *t);
-    bool contains(const pair<int,int> &x);
+    void insertChild(Node *parent); 
 
+    void printSteps();
 
 private:
-    Node* mRoot;
-
-    bool contains(const pair<int,int> &x, Node* t);
+    vector<Node*> mGeneralTree;
+    pair<int,int> mKnightEndPos;
 };
 
 

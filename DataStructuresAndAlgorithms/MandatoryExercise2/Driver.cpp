@@ -1,31 +1,26 @@
 #include "Driver.h"
-#include <bits/stdc++.h>
+#include "Node.h"
 
 using namespace std;
-
 
 int Driver::minimumSteps(int boardHeight, int boardWidth, int knightStartXPosition, int knightStartYPosition, int knightEndXPosition, int knightEndYPosition)
 {
     // Directions that the knight can move to from the current position.
     int dx[] = { -2, -1, 1, 2, -2, -1, 1, 2 };
     int dy[] = { -1, -2, -2, -1, 1, 2, 2, 1 };
+    
+    // Create start Node and tree.
+    Node* knightStart = new Node(pair<int,int>(knightStartXPosition, knightStartYPosition));
+    pair<int,int>knightEndPos(knightEndXPosition, knightEndYPosition);
+    Tree board(knightStart, knightEndPos);
 
-
-    pair<int,int> startPos(knightStartXPosition, knightStartYPosition);
-    pair<int,int> endPos(knightEndXPosition, knightEndYPosition);
-
-
-    //Tree tree(startPos);
-    queue<pair<int,int>> myStack;
-    myStack.push(startPos);
-
-    // Creating a map for the entire chessboard.
+    // Create a double array with the size of the chessboard
     bool visit[boardWidth + 1][boardHeight + 1];
-
-    // make all cell unvisited
-    for (int i = 1; i <= boardWidth; i++)
+    
+    // make all points unvisited
+    for (int i = 0; i <= boardWidth; i++)
     {
-        for (int j = 1; j <= boardHeight; j++)
+        for (int j = 0; j <= boardHeight; j++)
         {
             visit[i][j] = false;
         }
@@ -34,48 +29,47 @@ int Driver::minimumSteps(int boardHeight, int boardWidth, int knightStartXPositi
     // Set the start position of the knight to true.
     visit[knightStartXPosition][knightStartYPosition] = true;
 
-    pair<int,int> next;
-    int counter = 0, x, y;
-    while(!myStack.empty())
+    // Create a vector to insert all the points aswell to access them.
+    vector<Node*> iterationVector;
+    iterationVector.push_back(knightStart);
+    for(unsigned j = 0;; j++)
     {
-        counter++;
-        next = myStack.front();
-        myStack.pop();
-        // If destination is reached. return
-        if (next.first == endPos.first && next.second == endPos.second)
+        Node* next = iterationVector.at(j);
+
+        for (unsigned i = 0; i < 8; i++)
         {
+            // Setup next point in childarray
+            pair<int,int> nextPoint(next->getPoint().first+dx[i], next->getPoint().second+dy[i]);
 
-            // Maybe something with tree height?
-            return counter;
-        }
-
-        for (unsigned i = 0; i < 8 ; i++)
-        {
-            x = next.first + dx[i];
-            y = next.second + dy[i];
-
-            if(valid(x,y, boardHeight, boardWidth))
+            // If point is on board and we haven't visited yet - do this
+            if(valid(nextPoint.first, nextPoint.second, boardWidth, boardHeight) && visit[nextPoint.first][nextPoint.second] == false)
             {
-                visit[x][y] = true;
-                myStack.push(pair<int,int>(x,y));
+                // Make point visited
+                visit[nextPoint.first][nextPoint.second] = true;
+
+                // Create a new node. Insert it into the tree and the iteration vector.
+                Node* child = new Node(nextPoint, next);
+                iterationVector.push_back(child);
+                board.insertChild(child);
+            }
+
+            // If we are at the final point. Print steps and return number of steps.
+            if(nextPoint.first == knightEndXPosition &&nextPoint.second == knightEndYPosition)
+            {
+                board.printSteps();
+                return iterationVector.back()->getDist();
             }
         }
     }
-
-
-    return 0;
 }
 
+
+// Is it within the board.
 bool Driver::valid(int x, int y, int boardHeight, int boardWidth)
 {
-    if(x > boardWidth || y > boardHeight || x < 1 || y < 1)
+    if(x >= boardWidth || y >= boardHeight || x < 1 || y < 1)
     {
         return false;
     }
     return true;
-}
-
-void Driver::print()
-{
-
 }

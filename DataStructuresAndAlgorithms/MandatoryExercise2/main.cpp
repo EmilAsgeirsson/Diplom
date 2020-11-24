@@ -1,18 +1,25 @@
 #include <iostream>
 #include "Driver.h"
+#include <cstdio>
+#include <ctime>
 
 using namespace std;
 
 int main()
 {
 
-    //Tree tree;
+    std::clock_t start;
+    double duration;
 
-    //tree.insert(pair<int,int>(1,1), nullptr);
+    start = std::clock();
 
     Driver d;
+    int numSteps = d.minimumSteps(1000, 1000, 999, 999, 1, 1);
 
-    int numSteps = d.minimumSteps(1000, 1000, 0, 0, 999, 999);
-    cout << "Min number of steps =" << numSteps << endl;
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    cout << "Min number of steps = " << numSteps << endl;
+
+    std::cout<<"printf: "<< duration <<'\n';
+
     return 0;
 }

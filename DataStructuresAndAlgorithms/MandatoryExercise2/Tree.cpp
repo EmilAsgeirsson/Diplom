@@ -1,32 +1,29 @@
 #include "Tree.h"
+#include "iostream"
 
-void Tree::insert(const pair<int, int> &x, Node *t)
+using namespace std;
+
+//build tree from first point
+Tree::Tree(Node *startPos, pair<int,int> knightEndPosition)
+    : mKnightEndPos(knightEndPosition)
 {
-    if( t == nullptr )
-    {
-        t = new Node{x};
-    }
-    else
-    {
-        for (Node* child : t->getChildren())
-        {
-            // Checks if the point is already any of the children.
-            if(child->getPoint() == x)
-            {
-                return;
-            }
-        }
-        t->addChild(new Node(x));
-    }
+    mGeneralTree.push_back(startPos);
 }
 
-bool Tree::contains(const pair<int, int> &x)
+void Tree::insertChild(Node *point)
 {
-    return Tree::contains(x, mRoot);
-
+    mGeneralTree.push_back(point);
 }
 
-bool Tree::contains(const pair<int, int> &x, Node *t)
+void Tree::printSteps()
 {
+    vector<Node*> mSteps{mGeneralTree.back()};
 
+    cout << "Steps from end to begin: " << endl;
+    for (unsigned i = 0; mSteps[i]->getParent() != nullptr; i++)
+    {
+        cout << "Step: " << mSteps.size() << " - point: [" << mSteps[i]->getPoint().first <<  "," << mSteps[i]->getPoint().second << "]" << std::endl;
+        mSteps.push_back(mSteps[i]->getParent());
+    }
+    return;
 }

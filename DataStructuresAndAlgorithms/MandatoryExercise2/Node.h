@@ -8,15 +8,13 @@ using namespace std;
 class Node
 {
 public:
-    Node();
     Node(pair<int,int> point);
-    Node(pair<int,int> point, vector<Node*> children);
-
-    Node *newNode(pair<int,int> key);
+    Node(pair<int,int> point, Node* parent);
 
     // Getter methods
     pair<int,int> getPoint();
-    vector<Node*> getChildren();
+    Node* getParent();
+    int getDist();
 
     // Set point
     void setPoint(pair<int,int> point);
@@ -27,6 +25,8 @@ public:
 
 private:
     pair<int, int> mPoint;
+    int mDist;
+    Node* mParent;
     vector<Node*> mChildren;
 };
 
