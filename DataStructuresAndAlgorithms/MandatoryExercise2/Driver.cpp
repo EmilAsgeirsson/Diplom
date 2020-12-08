@@ -3,8 +3,14 @@
 
 using namespace std;
 
-int Driver::minimumSteps(int boardHeight, int boardWidth, int knightStartXPosition, int knightStartYPosition, int knightEndXPosition, int knightEndYPosition)
+int MinimumSteps(int boardHeight, int boardWidth, int knightStartXPosition, int knightStartYPosition, int knightEndXPosition, int knightEndYPosition)
 {
+    //cout << "StartPos: [" << knightStartXPosition << ", " << knightStartYPosition << "] and endpos: [" << knightEndXPosition << ", " << knightEndYPosition << "]" << endl;
+    if(knightStartXPosition == knightEndXPosition && knightStartYPosition == knightEndYPosition)
+    {
+        //cout << "endpos and startpos are at the same location" << endl;
+        return 0;
+    }
     // Directions that the knight can move to from the current position.
     int dx[] = { -2, -1, 1, 2, -2, -1, 1, 2 };
     int dy[] = { -1, -2, -2, -1, 1, 2, 2, 1 };
@@ -56,7 +62,7 @@ int Driver::minimumSteps(int boardHeight, int boardWidth, int knightStartXPositi
             // If we are at the final point. Print steps and return number of steps.
             if(nextPoint.first == knightEndXPosition &&nextPoint.second == knightEndYPosition)
             {
-                board.printSteps();
+                //board.printSteps();
                 return iterationVector.back()->getDist();
             }
         }
@@ -65,9 +71,9 @@ int Driver::minimumSteps(int boardHeight, int boardWidth, int knightStartXPositi
 
 
 // Is it within the board.
-bool Driver::valid(int x, int y, int boardHeight, int boardWidth)
+bool valid(int x, int y, int boardHeight, int boardWidth)
 {
-    if(x >= boardWidth || y >= boardHeight || x < 1 || y < 1)
+    if(x >= boardWidth || y >= boardHeight || x < 0 || y < 0)
     {
         return false;
     }

@@ -22,8 +22,9 @@ void Tree::printSteps()
     cout << "Steps from end to begin: " << endl;
     for (unsigned i = 0; mSteps[i]->getParent() != nullptr; i++)
     {
-        cout << "Step: " << mSteps.size() << " - point: [" << mSteps[i]->getPoint().first <<  "," << mSteps[i]->getPoint().second << "]" << std::endl;
+        cout << "Step: " << mSteps.size()-1 << " - point: [" << mSteps[i]->getPoint().first <<  "," << mSteps[i]->getPoint().second << "]" << std::endl;
         mSteps.push_back(mSteps[i]->getParent());
     }
+    cout << "Step: " << mSteps.size()-1 << " - point: [" << mSteps[mSteps.size()-1]->getPoint().first <<  "," << mSteps[mSteps.size()-1]->getPoint().second << "]" << std::endl;
     return;
 }
