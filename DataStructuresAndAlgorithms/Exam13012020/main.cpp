@@ -15,6 +15,8 @@ int myMethod(int N)
     return x;
 }
 
+
+
 int main()
 {
     cout << myMethod(100) << endl;

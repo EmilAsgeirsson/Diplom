@@ -9,7 +9,7 @@ void line() {
 
 int main() {
 
-    vector<int> keys = { 5, 8, 9, 13, 17, 15, 19 };
+    vector<int> keys = { 17,21,23,44,32,65,38,56,46,69,33,77,67,56,39,61,60,62,50,71 };
 
     // Build Heap
     cout << "Build Heap" << endl;
@@ -23,18 +23,18 @@ int main() {
     line();
 
     // IncreaseKey
-    cout << "IncreaseKey" << endl;
-    heap.increaseKey(3, 8);
+    //cout << "IncreaseKey" << endl;
+    //heap.increaseKey(3, 8);
 
-    heap.print(true, true);
-    line();
+    //heap.print(true, true);
+    //line();
 
     // DecreaseKey
-    cout << "DecreaseKey" << endl;
-    heap.decreaseKey(3, 12);
+    //cout << "DecreaseKey" << endl;
+    //heap.decreaseKey(3, 12);
 
-    heap.print(true, true);
-    line();
+    //heap.print(true, true);
+    //line();
 
 
     /*while (true) {
