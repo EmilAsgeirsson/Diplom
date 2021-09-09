@@ -6,11 +6,8 @@ import time
 
 def goodbye():
     print("Program exited successfully!")
-    MyController.frontpwm.ChangeDutyCycle(0)    # stop PWM
-    MyController.rearpwm.ChangeDutyCycle(0)  
-    GPIO.cleanup()                  # resets GPIO ports used back to input mode  
-
-atexit.register(goodbye)
+    #MyController.rearpwm.ChangeDutyCycle(0)     # stop PWM
+    GPIO.cleanup()                              # resets GPIO ports used back to input mode  
 
 class MyController(Controller):
 
@@ -19,39 +16,31 @@ class MyController(Controller):
 
     GPIO.setmode(GPIO.BCM)      # Set Pi to use pin number when referencing GPIO pins.
     
-    # Front_left motor
-    front_left = 5
+       # Front motor
+    front_left = 6
+    front_right = 5
+    front_act = 20
     GPIO.setup(front_left, GPIO.OUT)
-    GPIO.output(front_left, GPIO.LOW)
-    
-    front_right = 6
     GPIO.setup(front_right, GPIO.OUT)
-    GPIO.output(front_right, GPIO.LOW)
+    GPIO.setup(front_act, GPIO.OUT)
 
     # Rear motor
-    rear_reverse = 16
-    GPIO.setup(rear_reverse, GPIO.OUT)
-    GPIO.output(rear_reverse, GPIO.LOW)
-
-    rear_forward = 26
+    rear_forward = 16
+    rear_reverse = 26
+    rear_act = 24
     GPIO.setup(rear_forward, GPIO.OUT)
-    GPIO.output(rear_forward, GPIO.LOW)
+    GPIO.setup(rear_reverse, GPIO.OUT)
+    GPIO.setup(rear_act, GPIO.OUT)
+
+    #Pwm
+    rearpwngpio = 12
+    #GPIO.setup(rearpwngpio, GPIO.OUT)       # Set GPIO pin 13 to output mode - Rear.
+    #rearpwm = GPIO.PWM(rearpwngpio,2000)    # Set PWM frequency to 1000 Hz
+    #rearpwm.start(0)
     
     # Horn
     horn = 23
     GPIO.setup(horn, GPIO.OUT)
-
-    #Pwm
-    front_pwm_gpio = 12
-    GPIO.setup(front_pwm_gpio, GPIO.OUT)          # Set GPIO pin 13 to output mode - Front.
-    frontpwm = GPIO.PWM(front_pwm_gpio, 2000)     # Set PWM frequency to 1000 Hz
-    frontpwm.start(0)
-
-    rear_pwm_gpio = 13
-    GPIO.setup(rear_pwm_gpio, GPIO.OUT)           # Set GPIO pin 13 to output mode - Rear.
-    #GPIO.output(rear_pwm_gpio, GPIO.LOW)
-    rearpwm = GPIO.PWM(rear_pwm_gpio, 2000)       # Set PWM frequency to 1000 Hz
-    rearpwm.start(0)
     
 
     def __init__(self, **kwargs):
@@ -103,90 +92,81 @@ class MyController(Controller):
 
     def on_R2_press(self, value):
         percentage = math.trunc(((value+MyController.max_value) / (MyController.max_value*2)) * 100)
+        print("percentage: {}", percentage)
         GPIO.output(MyController.rear_forward, GPIO.HIGH)
         GPIO.output(MyController.rear_reverse, GPIO.LOW)
-        MyController.rearpwm.ChangeDutyCycle(percentage)
+        GPIO.output(MyController.rear_act, GPIO.HIGH)
+        #MyController.rearpwm.ChangeDutyCycle(percentage)
 
     def on_L2_press(self, value):
         percentage = math.trunc(((value+MyController.max_value) / (MyController.max_value*2)) * 100)
         GPIO.output(MyController.rear_forward, GPIO.LOW)
         GPIO.output(MyController.rear_reverse, GPIO.HIGH)
-        MyController.rearpwm.ChangeDutyCycle(percentage)
+        GPIO.output(MyController.rear_act, GPIO.HIGH)
+        #MyController.rearpwm.ChangeDutyCycle(percentage)
 
     def on_R2_release(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
+        #MyController.rearpwm.ChangeDutyCycle(0)
+        GPIO.output(MyController.rear_act, GPIO.LOW)
     
     def on_L2_release(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
+        GPIO.output(MyController.rear_act, GPIO.LOW)
+        #MyController.rearpwm.ChangeDutyCycle(0)
 
     def on_R3_up(self, value):
         percentage = MyController.get_percentage(value)
         GPIO.output(MyController.rear_forward, GPIO.HIGH)
         GPIO.output(MyController.rear_reverse, GPIO.LOW)
-        MyController.rearpwm.ChangeDutyCycle(percentage)
+        GPIO.output(MyController.rear_act, GPIO.HIGH)
+        #MyController.rearpwm.ChangeDutyCycle(percentage)
 
     def on_R3_down(self, value):
         percentage = MyController.get_percentage(value)
         GPIO.output(MyController.rear_forward, GPIO.LOW)
         GPIO.output(MyController.rear_reverse, GPIO.HIGH)
-        MyController.rearpwm.ChangeDutyCycle(percentage)
-
-    def on_L3_left(self, value):
-        percentage = MyController.get_percentage(value)
-        GPIO.output(MyController.front_left, GPIO.HIGH)
-        GPIO.output(MyController.front_right, GPIO.LOW)
-        MyController.frontpwm.ChangeDutyCycle(percentage)
-
-    def on_L3_right(self, value):
-        percentage = MyController.get_percentage(value)
-        GPIO.output(MyController.front_left, GPIO.LOW)
-        GPIO.output(MyController.front_right, GPIO.HIGH)
-        MyController.frontpwm.ChangeDutyCycle(percentage)
+        GPIO.output(MyController.rear_act, GPIO.HIGH)
+        #MyController.rearpwm.ChangeDutyCycle(percentage)
 
     def on_R3_y_at_rest(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
+        #MyController.rearpwm.ChangeDutyCycle(0)
+        GPIO.output(MyController.rear_act, GPIO.LOW)
 
-    # def on_R3_x_at_rest(self):
-    #     MyController.rearpwm.ChangeDutyCycle(0)
+    def on_R3_x_at_rest(self):
+         GPIO.output(MyController.rear_act, GPIO.LOW)
+         #MyController.rearpwm.ChangeDutyCycle(0)
 
     # Turn car
-    # def on_L3_left(self, value):
-    #     percentage = math.trunc((abs(value) / (MyController.max_value)) * 100)
-    #     GPIO.output(MyController.front_left, GPIO.HIGH)
-    #     GPIO.output(MyController.front_right, GPIO.LOW)
-    #     #MyController.frontpwm.ChangeDutyCycle(percentage)
-    #     MyController.frontpwm.ChangeDutyCycle(100)
+    def on_L3_left(self, value):
+        GPIO.output(MyController.front_left, GPIO.HIGH)
+        GPIO.output(MyController.front_right, GPIO.LOW)
+        GPIO.output(MyController.front_act, GPIO.HIGH)
 
-    # def on_L3_right(self, value):
-    #     percentage = math.trunc((value / (MyController.max_value)) * 100)
-    #     GPIO.output(MyController.front_left, GPIO.LOW)
-    #     GPIO.output(MyController.front_right, GPIO.HIGH)
-    #     #MyController.frontpwm.ChangeDutyCycle(percentage)
-    #     MyController.frontpwm.ChangeDutyCycle(100)
+    def on_L3_right(self, value):
+        GPIO.output(MyController.front_left, GPIO.LOW)
+        GPIO.output(MyController.front_right, GPIO.HIGH)
+        GPIO.output(MyController.front_act, GPIO.HIGH)
 
-    # def on_L3_y_at_rest(self):
-    #     MyController.frontpwm.ChangeDutyCycle(0)
+    def on_L3_y_at_rest(self):
+         GPIO.output(MyController.front_act, GPIO.LOW)
     
     def on_L3_x_at_rest(self):
-         MyController.frontpwm.ChangeDutyCycle(0)
-
+        GPIO.output(MyController.front_act, GPIO.LOW)
 
     def on_left_arrow_press(self):
         GPIO.output(MyController.front_left, GPIO.HIGH)
         GPIO.output(MyController.front_right, GPIO.LOW)
-        MyController.frontpwm.ChangeDutyCycle(100)
+        GPIO.output(MyController.front_act, GPIO.HIGH)
 
     def on_left_right_arrow_release(self):
-        MyController.frontpwm.ChangeDutyCycle(0)
+        GPIO.output(MyController.front_left, GPIO.LOW)
+        GPIO.output(MyController.front_right, GPIO.LOW)
+        GPIO.output(MyController.front_act, GPIO.LOW)
 
     def on_right_arrow_press(self):
         GPIO.output(MyController.front_left, GPIO.LOW)
         GPIO.output(MyController.front_right, GPIO.HIGH)
-        MyController.frontpwm.ChangeDutyCycle(100)
-
-    def on_right_arrow_release(self):
-        MyController.frontpwm.ChangeDutyCycle(0)
-
+        GPIO.output(MyController.front_act, GPIO.HIGH)
+"""
     def on_up_arrow_press(self):
         GPIO.output(MyController.rear_forward, GPIO.HIGH)
         GPIO.output(MyController.rear_reverse, GPIO.LOW)
@@ -245,7 +225,7 @@ class MyController(Controller):
         GPIO.setup(MyController.rear_pwm_gpio, GPIO.OUT)           # Set GPIO pin 13 to output mode - Rear.
         MyController.rearpwm = GPIO.PWM(MyController.rear_pwm_gpio, 2000)       # Set PWM frequency to 1000 Hz
         MyController.rearpwm.start(0)
-
+#"""
     # Do nothing commands
     # def on_x_release(self):
     #     pass    
@@ -274,6 +254,7 @@ class MyController(Controller):
     # def on_R3_x_at_rest(self):
     #     pass
 
+atexit.register(goodbye)
 
 # If gpio 16 is postive and gpio 26 is negative, the engine turns one way. If changes it drives the other way - make a specific button for this. PWM signal value is Gpio 13
 
