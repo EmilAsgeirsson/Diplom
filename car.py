@@ -1,231 +1,266 @@
 from pyPS4Controller.controller import Controller
 import RPi.GPIO as GPIO
+import smbus
 import math
 import atexit
 import time
 
 def goodbye():
     print("Program exited successfully!")
-    #MyController.rearpwm.ChangeDutyCycle(0)     # stop PWM
-    GPIO.cleanup()                              # resets GPIO ports used back to input mode  
+    #GPIO.cleanup()                              # resets GPIO ports used back to input mode  
 
-class MyController(Controller):
+bus = smbus.SMBus(1)
+address = 25  
+
+# Wait for I2C module to be ready
+time.sleep(1)
+
+
+
+class MyCtr(Controller):
 
     camera = False 
     max_value = 32768
 
-    GPIO.setmode(GPIO.BCM)      # Set Pi to use pin number when referencing GPIO pins.
-    
-       # Front motor
-    front_left = 6
-    front_right = 5
-    front_act = 20
-    GPIO.setup(front_left, GPIO.OUT)
-    GPIO.setup(front_right, GPIO.OUT)
-    GPIO.setup(front_act, GPIO.OUT)
+    # Data package
+    left_pwm = 40   # 0 - 255
+    left_wheel = 0  # 0 (forward) - 1 (reverse)
+    right_pwm = 40  # 0 - 255
+    right_wheel = 0 # 0 (reverse) - 1 (forward)
 
-    # Rear motor
-    rear_forward = 16
-    rear_reverse = 26
-    rear_act = 24
-    GPIO.setup(rear_forward, GPIO.OUT)
-    GPIO.setup(rear_reverse, GPIO.OUT)
-    GPIO.setup(rear_act, GPIO.OUT)
-
-    #Pwm
-    rearpwngpio = 12
-    #GPIO.setup(rearpwngpio, GPIO.OUT)       # Set GPIO pin 13 to output mode - Rear.
-    #rearpwm = GPIO.PWM(rearpwngpio,2000)    # Set PWM frequency to 1000 Hz
-    #rearpwm.start(0)
-    
-    # Horn
-    horn = 23
-    GPIO.setup(horn, GPIO.OUT)
-    
+    drive_forward = False
+    drive_reverse = False
+    turn_left = False
+    turn_right = False
 
     def __init__(self, **kwargs):
         Controller.__init__(self, **kwargs)
     
-    def get_percentage(value):
-        percentage = math.trunc((abs(value) / MyController.max_value) * 100)
-        if percentage < 50:
-            percentage = 0
-        elif percentage >= 50 and percentage < 75:
-            percentage = 75
+    def get_motor_value_analog(value):
+        if value is 0:
+            return 0
         else:
-            percentage = 100
-        return percentage
+            return math.trunc((abs(value) / MyCtr.max_value) * 255)
+
+    def get_motor_value_buttons(value):
+        if value is 0:
+            return 0
+        else:
+            return math.trunc(((value+MyCtr.max_value) / (MyCtr.max_value*2)) * 255)
+
+    def set_left_pwm(value):
+        MyCtr.left_pwm = MyCtr.get_motor_value_analog(value)
+
+    def set_right_pwm(value):
+        MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
 
     # Turn on and off camera
     def on_x_press(self):
-       if MyController.camera is True:
-         print("Turn off camera")
-         MyController.camera = False
-       else:
-         print("Turn on Camera")
-         MyController.camera = True
-
-    # Horn
-    def on_square_press(self):
-        GPIO.output(MyController.horn, GPIO.HIGH)
-
-    def on_square_release(self):
-        GPIO.output(MyController.horn, GPIO.LOW)
-
-    def buzz(noteFreq, duration):
-        halveWaveTime = 1 / (noteFreq * 2 )
-        waves = int(duration * noteFreq)
-        for i in range(waves):
-            GPIO.output(MyController.horn, True)
-            time.sleep(halveWaveTime)
-            GPIO.output(MyController.horn, False)
-            time.sleep(halveWaveTime)
-
-    def on_triangle_press(self):
-        t=0
-        notes=[262,294,330,262,262,294,330,262,330,349,392,330,349,392,392,440,392,349,330,262,392,440,392,349,330,262,262,196,262,262,196,262]
-        duration=[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,1,0.25,0.25,0.25,0.25,0.5,0.5,0.25,0.25,0.25,0.25,0.5,0.5,0.5,0.5,1,0.5,0.5,1]
-        for n in notes:
-            MyController.buzz(n, duration[t])
-            time.sleep(duration[t] *0.1)
-            t+=1
+        if MyCtr.camera is True:
+            print("Turn off camera")
+            MyCtr.camera = False
+        else:
+            print("Turn on Camera")
+            MyCtr.camera = True
 
     def on_R2_press(self, value):
-        percentage = math.trunc(((value+MyController.max_value) / (MyController.max_value*2)) * 100)
-        print("percentage: {}", percentage)
-        GPIO.output(MyController.rear_forward, GPIO.HIGH)
-        GPIO.output(MyController.rear_reverse, GPIO.LOW)
-        GPIO.output(MyController.rear_act, GPIO.HIGH)
-        #MyController.rearpwm.ChangeDutyCycle(percentage)
+        MyCtr.drive_forward = True
+        MyCtr.drive_reverse = False
+        if MyCtr.turn_left:
+            print("turn left")
+            MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.left_pwm > MyCtr.right_pwm) and MyCtr.right_pwm is not 0:
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.left_pwm = math.trunc((MyCtr.left_pwm / 255) * MyCtr.right_pwm)
+        elif MyCtr.turn_right:
+            print("turn right")
+            MyCtr.left_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.right_pwm > MyCtr.left_pwm) and MyCtr.left_pwm is not 0:
+                print("Too large")
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.right_pwm = math.trunc((MyCtr.right_pwm / 255 ) * MyCtr.left_pwm)
+        else:
+            print("not turning")
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+        
+        MyCtr.left_wheel = 0
+        MyCtr.right_wheel = 1
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
 
     def on_L2_press(self, value):
-        percentage = math.trunc(((value+MyController.max_value) / (MyController.max_value*2)) * 100)
-        GPIO.output(MyController.rear_forward, GPIO.LOW)
-        GPIO.output(MyController.rear_reverse, GPIO.HIGH)
-        GPIO.output(MyController.rear_act, GPIO.HIGH)
-        #MyController.rearpwm.ChangeDutyCycle(percentage)
+        MyCtr.drive_forward = False
+        MyCtr.drive_reverse = True
+        if MyCtr.turn_left:
+            print("turn left")
+            MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.left_pwm > MyCtr.right_pwm) and MyCtr.right_pwm is not 0:
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.left_pwm = math.trunc((MyCtr.left_pwm / 255) * MyCtr.right_pwm)
+        elif MyCtr.turn_right:
+            print("turn right")
+            MyCtr.left_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.right_pwm > MyCtr.left_pwm) and MyCtr.left_pwm is not 0:
+                print("Too large")
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.right_pwm = math.trunc((MyCtr.right_pwm / 255 ) * MyCtr.left_pwm)
+        else:
+            print("not turning")
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+        
+        MyCtr.left_wheel = 1
+        MyCtr.right_wheel = 0
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
 
     def on_R2_release(self):
-        #MyController.rearpwm.ChangeDutyCycle(0)
-        GPIO.output(MyController.rear_act, GPIO.LOW)
+        MyCtr.drive_forward = False
+        MyCtr.left_pwm = MyCtr.right_pwm = 0
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
     
     def on_L2_release(self):
-        GPIO.output(MyController.rear_act, GPIO.LOW)
-        #MyController.rearpwm.ChangeDutyCycle(0)
+        MyCtr.drive_reverse = False
+        MyCtr.left_pwm = MyCtr.right_pwm = 0
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
 
     def on_R3_up(self, value):
-        percentage = MyController.get_percentage(value)
-        GPIO.output(MyController.rear_forward, GPIO.HIGH)
-        GPIO.output(MyController.rear_reverse, GPIO.LOW)
-        GPIO.output(MyController.rear_act, GPIO.HIGH)
-        #MyController.rearpwm.ChangeDutyCycle(percentage)
+        MyCtr.drive_forward = True
+        MyCtr.drive_reverse = False
+        if MyCtr.turn_left:
+            print("turn left")
+            MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.left_pwm > MyCtr.right_pwm) and MyCtr.right_pwm is not 0:
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.left_pwm = math.trunc((MyCtr.left_pwm / 255) * MyCtr.right_pwm)
+        elif MyCtr.turn_right:
+            print("turn right")
+            MyCtr.left_pwm = MyCtr.get_motor_value_buttons(value)
+            if (MyCtr.right_pwm > MyCtr.left_pwm) and MyCtr.left_pwm is not 0:
+                print("Too large")
+                if MyCtr.left_pwm > 200:
+                    MyCtr.left_pwm = 0
+                else:
+                    MyCtr.right_pwm = math.trunc((MyCtr.right_pwm / 255 ) * MyCtr.left_pwm)
+        else:
+            print("not turning")
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
+        
+        MyCtr.left_wheel = 0
+        MyCtr.right_wheel = 1
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
 
     def on_R3_down(self, value):
-        percentage = MyController.get_percentage(value)
-        GPIO.output(MyController.rear_forward, GPIO.LOW)
-        GPIO.output(MyController.rear_reverse, GPIO.HIGH)
-        GPIO.output(MyController.rear_act, GPIO.HIGH)
-        #MyController.rearpwm.ChangeDutyCycle(percentage)
+        MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
+        MyCtr.left_wheel = 1
+        MyCtr.right_wheel = 0
+        data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+        bus.write_i2c_block_data(address, 0, data)
 
     def on_R3_y_at_rest(self):
-        #MyController.rearpwm.ChangeDutyCycle(0)
-        GPIO.output(MyController.rear_act, GPIO.LOW)
+        MyCtr.drive_forward = False
+        MyCtr.drive_reverse = False
+        if MyCtr.turn_right == MyCtr.turn_left:
+            MyCtr.left_pwm = MyCtr.right_pwm = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
 
     def on_R3_x_at_rest(self):
-         GPIO.output(MyController.rear_act, GPIO.LOW)
-         #MyController.rearpwm.ChangeDutyCycle(0)
+        MyCtr.turn_left = False
+        MyCtr.turn_right = False
+        if MyCtr.drive_forward == MyCtr.drive_reverse:
+            MyCtr.left_pwm = MyCtr.right_pwm = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
 
     # Turn car
+    def on_R3_left(self, value):
+        MyCtr.turn_left = True
+        MyCtr.turn_right = False
+        #print("drive_forward: ", MyCtr.drive_forward, ", drive_reverse: ", MyCtr.drive_reverse)
+        if not (MyCtr.drive_forward == MyCtr.drive_reverse):
+            print("left_pwm_before: ", MyCtr.left_pwm)
+            MyCtr.set_left_pwm(value)
+            print("left_pwm_after:  ", MyCtr.left_pwm)
+        else:
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
+            MyCtr.left_wheel = MyCtr.right_wheel= 1
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
+
+    def on_R3_right(self, value):
+        MyCtr.turn_left = False
+        MyCtr.turn_right = True
+        #print("drive_forward: ", MyCtr.drive_forward, ", drive_reverse: ", MyCtr.drive_reverse)
+        if not (MyCtr.drive_forward == MyCtr.drive_reverse):
+            MyCtr.set_right_pwm(value)
+        else:
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
+            MyCtr.left_wheel = MyCtr.right_wheel = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
+            
     def on_L3_left(self, value):
-        GPIO.output(MyController.front_left, GPIO.HIGH)
-        GPIO.output(MyController.front_right, GPIO.LOW)
-        GPIO.output(MyController.front_act, GPIO.HIGH)
+        MyCtr.turn_left = True
+        MyCtr.turn_right = False
+        #print("drive_forward: ", MyCtr.drive_forward, ", drive_reverse: ", MyCtr.drive_reverse)
+        if not (MyCtr.drive_forward == MyCtr.drive_reverse):
+            print("left_pwm_before: ", MyCtr.left_pwm)
+            MyCtr.set_left_pwm(value)
+            print("left_pwm_after:  ", MyCtr.left_pwm)
+        else:
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
+            MyCtr.left_wheel = MyCtr.right_wheel= 1
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
 
     def on_L3_right(self, value):
-        GPIO.output(MyController.front_left, GPIO.LOW)
-        GPIO.output(MyController.front_right, GPIO.HIGH)
-        GPIO.output(MyController.front_act, GPIO.HIGH)
+        MyCtr.turn_left = False
+        MyCtr.turn_right = True
+        #print("drive_forward: ", MyCtr.drive_forward, ", drive_reverse: ", MyCtr.drive_reverse)
+        if not (MyCtr.drive_forward == MyCtr.drive_reverse):
+            MyCtr.set_right_pwm(value)
+        else:
+            MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_analog(value)
+            MyCtr.left_wheel = MyCtr.right_wheel = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
+    
+    def on_L3_up(self, value):
+        pass 
+
+    def on_L3_down(self, value):
+        pass 
 
     def on_L3_y_at_rest(self):
-         GPIO.output(MyController.front_act, GPIO.LOW)
+        MyCtr.turn_left = False
+        MyCtr.turn_right = False
+        if MyCtr.drive_forward == MyCtr.drive_reverse:
+            MyCtr.left_pwm = MyCtr.right_pwm = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
     
     def on_L3_x_at_rest(self):
-        GPIO.output(MyController.front_act, GPIO.LOW)
-
-    def on_left_arrow_press(self):
-        GPIO.output(MyController.front_left, GPIO.HIGH)
-        GPIO.output(MyController.front_right, GPIO.LOW)
-        GPIO.output(MyController.front_act, GPIO.HIGH)
-
-    def on_left_right_arrow_release(self):
-        GPIO.output(MyController.front_left, GPIO.LOW)
-        GPIO.output(MyController.front_right, GPIO.LOW)
-        GPIO.output(MyController.front_act, GPIO.LOW)
-
-    def on_right_arrow_press(self):
-        GPIO.output(MyController.front_left, GPIO.LOW)
-        GPIO.output(MyController.front_right, GPIO.HIGH)
-        GPIO.output(MyController.front_act, GPIO.HIGH)
-"""
-    def on_up_arrow_press(self):
-        GPIO.output(MyController.rear_forward, GPIO.HIGH)
-        GPIO.output(MyController.rear_reverse, GPIO.LOW)
-        MyController.rearpwm.ChangeDutyCycle(100)
-
-    def on_up_arrow_release(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
-
-    def on_down_arrow_press(self):
-        GPIO.output(MyController.rear_forward, GPIO.LOW)
-        GPIO.output(MyController.rear_reverse, GPIO.HIGH)
-        MyController.rearpwm.ChangeDutyCycle(100)
-
-    def on_down_arrow_release(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
-
-    def on_up_down_arrow_release(self):
-        MyController.rearpwm.ChangeDutyCycle(0)
-
-    def reset_gpio():
-        MyController.rearpwm.ChangeDutyCycle(0)
-        MyController.frontpwm.ChangeDutyCycle(0)
-        GPIO.cleanup() 
-        GPIO.setmode(GPIO.BCM)      # Set Pi to use pin number when referencing GPIO pins.
-    
-        # Front_left motor
-        MyController.front_left = 5
-        GPIO.setup(MyController.front_left, GPIO.OUT)
-        GPIO.output(MyController.front_left, GPIO.LOW)
+        MyCtr.turn_left = False
+        MyCtr.turn_right = False
+        if MyCtr.drive_forward == MyCtr.drive_reverse:
+            MyCtr.left_pwm = MyCtr.right_pwm = 0
+            data = [MyCtr.left_pwm, MyCtr.left_wheel, MyCtr.right_pwm, MyCtr.right_wheel]
+            bus.write_i2c_block_data(address, 0, data)
         
-        MyController.front_right = 6
-        GPIO.setup(MyController.front_right, GPIO.OUT)
-        GPIO.output(MyController.front_right, GPIO.LOW)
 
-        # Rear motor
-        MyController.rear_reverse = 16
-        GPIO.setup(MyController.rear_reverse, GPIO.OUT)
-        GPIO.output(MyController.rear_reverse, GPIO.LOW)
-
-        MyController.rear_forward = 26
-        GPIO.setup(MyController.rear_forward, GPIO.OUT)
-        GPIO.output(MyController.rear_forward, GPIO.LOW)
-        
-        # Horn
-        MyController.horn = 23
-        GPIO.setup(MyController.horn, GPIO.OUT)
-
-        #Pwm
-        MyController.front_pwm_gpio = 12
-        
-        GPIO.setup(MyController.front_pwm_gpio, GPIO.OUT)          # Set GPIO pin 13 to output mode - Front.
-        MyController.frontpwm = GPIO.PWM(MyController.front_pwm_gpio, 2000)     # Set PWM frequency to 1000 Hz
-        MyController.frontpwm.start(0)
-        
-        MyController.rear_pwm_gpio = 13
-        GPIO.setup(MyController.rear_pwm_gpio, GPIO.OUT)           # Set GPIO pin 13 to output mode - Rear.
-        MyController.rearpwm = GPIO.PWM(MyController.rear_pwm_gpio, 2000)       # Set PWM frequency to 1000 Hz
-        MyController.rearpwm.start(0)
-#"""
     # Do nothing commands
     # def on_x_release(self):
     #     pass    
@@ -260,7 +295,28 @@ atexit.register(goodbye)
 
 # Gpio 12 is pwm for turning. Gpio 5 and 6 is used to determine which direction.
 
-controller = MyController(interface="/dev/input/js0", connecting_using_ds4drv=False)
+controller = MyCtr(interface="/dev/input/js0", connecting_using_ds4drv=False)
 # you can start listening before controller is paired, as long as you pair it within the timeout window
 
 controller.listen(timeout=60)   
+
+        
+"""
+    def buzz(noteFreq, duration):
+        halveWaveTime = 1 / (noteFreq * 2 )
+        waves = int(duration * noteFreq)
+        for i in range(waves):
+            GPIO.output(MyController.horn, True)
+            time.sleep(halveWaveTime)
+            GPIO.output(MyController.horn, False)
+            time.sleep(halveWaveTime)
+
+    def on_triangle_press(self):
+        t=0
+        notes=[262,294,330,262,262,294,330,262,330,349,392,330,349,392,392,440,392,349,330,262,392,440,392,349,330,262,262,196,262,262,196,262]
+        duration=[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,1,0.5,0.5,1,0.25,0.25,0.25,0.25,0.5,0.5,0.25,0.25,0.25,0.25,0.5,0.5,0.5,0.5,1,0.5,0.5,1]
+        for n in notes:
+            MyController.buzz(n, duration[t])
+            time.sleep(duration[t] *0.1)
+            t+=1
+"""
