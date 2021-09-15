@@ -12,6 +12,7 @@ def goodbye():
 bus = smbus.SMBus(1)
 address = 25  
 
+
 # Wait for I2C module to be ready
 time.sleep(1)
 
@@ -21,6 +22,7 @@ class MyCtr(Controller):
 
     camera = False 
     max_value = 32768
+    prev_value = 0
 
     # Data package
     left_pwm = 40   # 0 - 255
@@ -40,13 +42,23 @@ class MyCtr(Controller):
         if value is 0:
             return 0
         else:
-            return math.trunc((abs(value) / MyCtr.max_value) * 255)
+            new_value = math.trunc((abs(value) / MyCtr.max_value) * 255)
+            if new_value > MyCtr.prev_value:
+                MyCtr.prev_value = MyCtr.prev_value + 1
+            else:
+                MyCtr.prev_value = new_value
+            return MyCtr.prev_value
 
     def get_motor_value_buttons(value):
         if value is 0:
             return 0
         else:
-            return math.trunc(((value+MyCtr.max_value) / (MyCtr.max_value*2)) * 255)
+            new_value = math.trunc(((value+MyCtr.max_value) / (MyCtr.max_value*2)) * 255)
+            if new_value > MyCtr.prev_value:
+                MyCtr.prev_value = MyCtr.prev_value + 1
+            else:
+                MyCtr.prev_value = new_value
+            return MyCtr.prev_value
 
     def set_left_pwm(value):
         MyCtr.left_pwm = MyCtr.get_motor_value_analog(value)
@@ -67,7 +79,6 @@ class MyCtr(Controller):
         MyCtr.drive_forward = True
         MyCtr.drive_reverse = False
         if MyCtr.turn_left:
-            print("turn left")
             MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
             if (MyCtr.left_pwm > MyCtr.right_pwm) and MyCtr.right_pwm is not 0:
                 if MyCtr.left_pwm > 200:
@@ -75,16 +86,13 @@ class MyCtr(Controller):
                 else:
                     MyCtr.left_pwm = math.trunc((MyCtr.left_pwm / 255) * MyCtr.right_pwm)
         elif MyCtr.turn_right:
-            print("turn right")
             MyCtr.left_pwm = MyCtr.get_motor_value_buttons(value)
             if (MyCtr.right_pwm > MyCtr.left_pwm) and MyCtr.left_pwm is not 0:
-                print("Too large")
                 if MyCtr.left_pwm > 200:
                     MyCtr.left_pwm = 0
                 else:
                     MyCtr.right_pwm = math.trunc((MyCtr.right_pwm / 255 ) * MyCtr.left_pwm)
         else:
-            print("not turning")
             MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
         
         MyCtr.left_wheel = 0
@@ -96,7 +104,6 @@ class MyCtr(Controller):
         MyCtr.drive_forward = False
         MyCtr.drive_reverse = True
         if MyCtr.turn_left:
-            print("turn left")
             MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
             if (MyCtr.left_pwm > MyCtr.right_pwm) and MyCtr.right_pwm is not 0:
                 if MyCtr.left_pwm > 200:
@@ -104,16 +111,13 @@ class MyCtr(Controller):
                 else:
                     MyCtr.left_pwm = math.trunc((MyCtr.left_pwm / 255) * MyCtr.right_pwm)
         elif MyCtr.turn_right:
-            print("turn right")
             MyCtr.left_pwm = MyCtr.get_motor_value_buttons(value)
             if (MyCtr.right_pwm > MyCtr.left_pwm) and MyCtr.left_pwm is not 0:
-                print("Too large")
                 if MyCtr.left_pwm > 200:
                     MyCtr.left_pwm = 0
                 else:
                     MyCtr.right_pwm = math.trunc((MyCtr.right_pwm / 255 ) * MyCtr.left_pwm)
         else:
-            print("not turning")
             MyCtr.left_pwm = MyCtr.right_pwm = MyCtr.get_motor_value_buttons(value)
         
         MyCtr.left_wheel = 1
