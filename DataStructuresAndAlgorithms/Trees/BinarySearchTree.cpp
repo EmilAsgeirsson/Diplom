@@ -237,10 +237,12 @@ void BinarySearchTree::postorderTraversal(BinaryNode* node)
                 return;
 
     // then recur on left sutree
-    preorderTraversal(node->left);
+    //preorderTraversal(node->left);
+    postorderTraversal(node->left);
 
     // now recur on right subtree
-    preorderTraversal(node->right);
+    postorderTraversal(node->right);
+    //preorderTraversal(node->right);
 
     // first print data of node
     cout << node->element << " ";
